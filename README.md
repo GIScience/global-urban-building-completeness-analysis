@@ -1,9 +1,9 @@
 # Investigating the digital divide in OpenStreetMap: spatio-temporal analysis of inequalities in global urban building completeness
 
-Here is the python code for reproducing the analysis and figures presented in the global urban building completeness analysis manuscript. Several jupyter notebooks and python scripts are provided to run the machine learning model based on the input datasets.
+Here is the python code for reproducing the analysis and figures presented in the global urban building completeness analysis manuscript. Several jupyter notebooks and python scripts are provided.
 
 ### Data
-Make sure to download geopackage data from HeiBox: 
+Make sure to download geopackage data from HeiBox: https://heibox.uni-heidelberg.de/f/b2f22e7f341f48a89100/
 
 
 ### Figures and Analyses
