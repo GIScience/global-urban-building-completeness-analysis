@@ -170,6 +170,8 @@ venv.bak/
 .idea/
 *log
 data/*.gpkg
+data/*.gpkg-shm
+data/*.gpkg-wal
 
 # DBEAVER
 
