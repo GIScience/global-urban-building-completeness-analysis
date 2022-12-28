@@ -64,6 +64,14 @@ def run_prediction(training_data):
     y_pred = regressor.predict(X_input)
     logging.info(f"predicted model: {MODEL_NAME}")
 
+    # get importance
+    importance = regressor.feature_importances_
+    # summarize feature importance
+    feature_importance = {}
+    for i, v in enumerate(importance):
+        feature_importance[COVARIATE_COLUMNS[i]] = v
+    logging.info(feature_importance)
+
     df[f"prediction"] = y_pred
     con = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
     export_columns = [

@@ -88,3 +88,12 @@ CREATE TABLE all_parameters_urban_centers_grid (
 	PRIMARY KEY (id, urban_center_id)
 );
 CREATE INDEX all_parameters_urban_centers_grid_idx ON all_parameters_urban_centers_grid USING gist (geom);
+
+CREATE TABLE reference_data_urban_centers_grid_raw (
+	grid_fid int4 NULL,
+	"source" text NULL,
+	building_count int8 NULL,
+	building_area_sqkm numeric NULL,
+	geom public.geometry(polygon, 4326) NULL,
+	PRIMARY KEY(grid_fid, "source")
+);
