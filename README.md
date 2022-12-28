@@ -28,7 +28,12 @@ python scripts/update_osm_buildings_stats_2023.py
 psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/update_osm_building_stats_2023.sql
 ```
 
-Optional: Update Microsoft building stats per grid cell.
+Optional: Update reference building data or Microsoft building data stats per grid cell.
+
+```
+# TODO: add script to update microsoft data
+psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/create_reference_data_urban_centers_grid.sql
+```
 
 ### Prediction
 Run ML model to predict building area per 1km x 1km grid cell. Then calculate completeness per grid cell and aggregate prediction results for each urban center and derive completeness for each year.
