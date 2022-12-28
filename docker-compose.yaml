@@ -1,0 +1,17 @@
+version: "3"
+services:
+  global-urban-building-completeness-database:
+    container_name: global-urban-building-completeness-db
+    build:
+      context: database/
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_DB: osm-paper
+      POSTGRES_USER: osm-paper
+      POSTGRES_PASSWORD: osm-paper
+    ports:
+      - "5429:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
