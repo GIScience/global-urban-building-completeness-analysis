@@ -1,16 +1,43 @@
-# Investigating the digital divide in OpenStreetMap: spatio-temporal analysis of inequalities in global urban building completeness
+# Investigating completeness and inequalities in OpenStreetMap: spatio-temporal analysis of global urban building data
 
-Here is the python code for reproducing the analysis and figures presented in the global urban building completeness analysis manuscript. Several jupyter notebooks and python scripts are provided.
+OpenStreetMap (OSM) has evolved as a popular geospatial dataset for global studies, such as monitoring progress towards the Sustainable Development Goals (SDGs).
+However, many global applications turn a blind eye on its uneven spatial coverage. We utilized a regression model to infer OSM building completeness within 13,189 urban agglomerations home to 50\% of the global population.
 
-You can also interactively explore the results in [ohsomeHex](https://hex.ohsome.org/#/urban_building_completeness/2022-01-01T00:00:00Z/2/29.21752531472042/16.251362043911197).
-[![name](figures/ohsome_hex_screenshot.png)](https://hex.ohsome.org/#/urban_building_completeness/2022-01-01T00:00:00Z/2/29.21752531472042/16.251362043911197)
+Here we provide the python code and data for reproducing the analysis and figures presented in the global urban OSM building completeness analysis manuscript. Several jupyter notebooks and additional scripts are provided to pre-process the data.
+
 
 ## Data
 Make sure to download geopackage data from HeiBox: https://heibox.uni-heidelberg.de/f/b2f22e7f341f48a89100/
 
-## Workflow
-### Data Preparation
+You can also interactively explore the results in [ohsomeHex](https://hex.ohsome.org/#/urban_building_completeness/2022-01-01T00:00:00Z/2/29.21752531472042/16.251362043911197).
+[![name](figures/ohsome_hex_screenshot.png)](https://hex.ohsome.org/#/urban_building_completeness/2022-01-01T00:00:00Z/2/29.21752531472042/16.251362043911197)
+
+
+## Create Figures, Maps and Tables
+### Figures and Analyses
+The processing steps for the analyses can be found in the `notebooks` section. The figures are stored in the `figures` directory.
+
+### Maps
+The maps are created in [QGIS](https://www.qgis.org/en/site/). All relevant data files, qgis project files and styles are stored in the geopackage `data/global_urban_building_completeness.gpkg`.
+
+
+
+## Data Preparation
 Insert the base data into the postgres tables for urban centers and grids. Insert data for corporate and humanitarian map edits.
+
+initial tables on urban centers grid level:
+* metadata_urban_centers_grid
+* worldcover_2020_urban_centers_grid
+* ghspop_2020_urban_centers_grid
+* shdi_2019_urban_centers_grid
+* vnl_2020_urban_centers_grid
+* osm_roads_2022_urban_centers_grid
+* osm_building_area_2023_urban_centers_grid
+* external_reference_data_urban_centers_grid
+* microsoft_reference_data_urban_centers_grid
+
+initial tables on urban centers grid level:
+* metadata_urban_centers
 
 ```
 psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/all_parameters_urban_centers_grid.sql
@@ -19,36 +46,25 @@ psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/reference_data_urban
 psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/update_table_structure.sql
 ```
 
-Optional: Update OSM building stats per urban center and grid cell. (This might take some time depending on how many urban centers will be analysed.)
+Optional: Update OSM building stats grid cell. (This might take some time depending on how many urban centers will be analysed.)
 
 ```
-python scripts/update_osm_buildings_stats.py
-psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/update_osm_building_stats.sql
-```
-
-```
-python scripts/update_osm_buildings_stats_2023.py
-psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/update_osm_building_stats_2023.sql
-```
-
-Optional: Update reference building data or Microsoft building data stats per grid cell.
-
-```
-# TODO: add script to update microsoft data
-psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/create_reference_data_urban_centers_grid.sql
+python scripts/update_osm_buildings_stats_grid_2023.py
 ```
 
 Optional: Update GHS-POP data per grid cell
-
 * download the latest version from GHS-POP Website at 1 kilometer resolution for 2020: https://ghsl.jrc.ec.europa.eu/download.php?ds=pop
 * https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2022A/GHS_POP_E2020_GLOBE_R2022A_54009_1000/V1-0/GHS_POP_E2020_GLOBE_R2022A_54009_1000_V1_0.zip
 * clip ghspop raster to urban centers extent `gdal_calc.py -A ghssmod_binary.tif -B GHS_POP_E2015_GLOBE_R2019A_54009_1K_V1_0.tif --outfile=ghspop_urban_centers_2020.tif --calc="B*(A>0)" --NoDataValue=0`
 * convert raster to vector in QGIS with `Polygonize` tool
 * import to postgis DB
-* rename/add columns for tables `all_parameters_urban_centers` and `all_parameters_urban_centers_grid`
-* update tables with 2020 ghspop values
-* calculate local Moran's I for ghspop 2020 values
+* update tables `full_urban_centers_grid` and `full_urban_centers` with 2020 ghspop values
 
+Optional: Update reference building data or Microsoft building data stats per grid cell.
+```
+# TODO: add script to update microsoft data
+psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/create_reference_data_urban_centers_grid.sql
+```
 
 
 
@@ -78,12 +94,9 @@ ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhos
 ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhost port=5429 dbname=osm-paper user=osm-paper password=osm-paper" -update -overwrite -nlt POLYGON -nln rf_adjusted_prediction_reference_and_osm_urban_centers -sql "SELECT * FROM rf_adjusted_prediction_reference_and_osm_urban_centers"
 ```
 
-### Create Figures, Maps and Tables
-#### Figures and Analyses
-The processing steps for the analyses can be found in the `notebooks` section. The figures are stored in the `figures` directory.
+Export data as sql for ohsomeHex visualisation.
 
-#### Maps
-The maps are created in [QGIS](https://www.qgis.org/en/site/). All relevant data files, qgis project files and styles are stored in the geopackage `data/global_urban_building_completeness.gpkg`.
+* TODO: add script here
 
 
 
