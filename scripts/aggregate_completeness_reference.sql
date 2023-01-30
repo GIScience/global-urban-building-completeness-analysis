@@ -1,21 +1,21 @@
-drop table if exists rf_adjusted_prediction_reference;
-create table rf_adjusted_prediction_reference AS (
+drop table if exists prediction_reference_urban_centers_grid;
+create table prediction_reference_urban_centers_grid AS (
     select
         a.*
         ,b.prediction
-        ,a.osm_building_area_sqkm / b.prediction as prediction_osm_completeness
-    from all_parameters_urban_centers_grid a
-    left join rf_adjusted_prediction_reference_raw b on
-        a.id = b.grid_fid
+        ,a.osm_building_area_sqkm_2023 / b.prediction as prediction_osm_completeness_2023
+    from full_urban_centers_grid a
+    left join prediction_reference_grid_raw b on
+        a.grid_fid = b.grid_fid
 );
 
-drop table if exists rf_adjusted_prediction_reference_urban_centers;
-create table rf_adjusted_prediction_reference_urban_centers AS
+drop table if exists prediction_reference_urban_centers;
+create table prediction_reference_urban_centers AS
 with urban_centers_data as (
     select
       urban_center_id
       ,sum(prediction) as sum_prediction_sqkm
-    from rf_adjusted_prediction_reference_raw a
+    from prediction_reference_grid_raw a
     group by urban_center_id
 )
 select
@@ -37,6 +37,6 @@ select
     ,a.osm_building_area_sqkm_2010  / b.sum_prediction_sqkm as prediction_osm_completeness_2010
     ,a.osm_building_area_sqkm_2009  / b.sum_prediction_sqkm as prediction_osm_completeness_2009
     ,a.osm_building_area_sqkm_2008  / b.sum_prediction_sqkm as prediction_osm_completeness_2008
-from all_parameters_urban_centers a
+from full_urban_centers a
 left join urban_centers_data b on
     a.urban_center_id = b.urban_center_id;

@@ -33,13 +33,24 @@ osm_building_area_2023_urban_centers as (
 	from osm_building_area_2023_urban_centers_grid
 	group by urban_center_id
 ),
-reference_data_urban_centers as (
+external_reference_data_urban_centers as (
 	select
 		urban_center_id
-		,SUM(reference_building_area_sqkm) as reference_building_area_sqkm
-		,SUM(microsoft_building_area_sqkm) as microsoft_building_area_sqkm
-	from reference_data_urban_centers_grid
+		,SUM(external_reference_building_area_sqkm) as external_reference_building_area_sqkm
+	from external_reference_data_urban_centers_grid
 	group by urban_center_id
+),
+microsoft_reference_data_urban_centers as (
+	select
+		urban_center_id
+		,SUM(microsoft_building_area_sqkm) as microsoft_building_area_sqkm
+	from microsoft_buildings_urban_centers_grid
+	group by urban_center_id
+),
+geowiki_selection_urban_centers as (
+    select urban_center_id, 1  as geowiki
+    from geowiki_selection
+    group by urban_center_id
 )
 select
 	a.*
@@ -73,8 +84,25 @@ select
     ,d.osm_building_area_sqkm_2010
     ,d.osm_building_area_sqkm_2009
     ,d.osm_building_area_sqkm_2008
-    ,e.reference_building_area_sqkm
-    ,e.microsoft_building_area_sqkm
+    ,e.external_reference_building_area_sqkm
+    ,f.microsoft_building_area_sqkm
+    ,case
+    	when e.external_reference_building_area_sqkm is null then f.microsoft_building_area_sqkm
+    	else e.external_reference_building_area_sqkm
+    end as reference_building_area_sqkm
+    ,case
+    	when e.external_reference_building_area_sqkm is null and g.geowiki=1 then f.microsoft_building_area_sqkm
+    	else e.external_reference_building_area_sqkm
+    end as reference_building_area_sqkm_strict
+    ,case
+		when e.external_reference_building_area_sqkm is null then d.osm_building_area_sqkm_2023 / f.microsoft_building_area_sqkm
+		else d.osm_building_area_sqkm_2023 / e.external_reference_building_area_sqkm
+	end as reference_osm_completeness
+	,case
+		when e.external_reference_building_area_sqkm is null then d.osm_building_area_sqkm_2023 / f.microsoft_building_area_sqkm
+		else d.osm_building_area_sqkm_2023 / e.external_reference_building_area_sqkm
+	end as reference_osm_completeness_strict
+	,g.geowiki
 from metadata_urban_centers a
 left join ghspop_2020_urban_centers b on
 	a.urban_center_id = b.urban_center_id
@@ -82,13 +110,14 @@ left join shdi_2019_urban_centers c on
 	a.urban_center_id = c.urban_center_id
 left join osm_building_area_2023_urban_centers d on
 	a.urban_center_id = d.urban_center_id
-left join reference_data_urban_centers e on
+left join external_reference_data_urban_centers e on
 	a.urban_center_id = e.urban_center_id
+left join microsoft_reference_data_urban_centers f on
+	a.urban_center_id = f.urban_center_id
+left join geowiki_selection_urban_centers g on
+    a.urban_center_id = g.urban_center_id
 );
 
 CREATE INDEX full_urban_centers_gist
   ON full_urban_centers
   USING GIST (geom);
-
-
-
