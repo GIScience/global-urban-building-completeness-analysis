@@ -1,5 +1,7 @@
 # Investigating completeness and inequalities in OpenStreetMap: spatio-temporal analysis of global urban building data
 
+Benjamin Herfort, Sven Lautenbach, João Porto de Albuquerque et al. Investigating the digital divide in OpenStreetMap: spatio-temporal analysis of inequalities in global urban building completeness, 26 August 2022, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-1913150/v1](https://doi.org/10.21203/rs.3.rs-1913150/v1)
+
 > OpenStreetMap (OSM) has evolved as a popular geospatial dataset for global studies, such as monitoring progress towards the Sustainable Development Goals.
 However, many global applications turn a blind eye on its uneven spatial coverage.
 We utilized a regression model to infer OSM building completeness within 13,189 urban agglomerations.
