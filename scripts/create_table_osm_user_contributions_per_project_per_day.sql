@@ -72,3 +72,14 @@ CREATE TABLE data_preparation.projects (
 	region_name varchar NULL,
 	region_id int4 NULL
 );
+
+DROP TABLE IF EXISTS data_preparation.sessions;
+CREATE TABLE data_preparation.sessions (
+	session_id text NULL,
+	project_id int4 NULL,
+	task_id int4 NULL,
+	"action" varchar NULL,
+	userid int8 NULL,
+	starttime timestamp NULL,
+	endtime timestamp NULL
+);

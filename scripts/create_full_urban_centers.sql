@@ -33,11 +33,21 @@ osm_building_area_2023_urban_centers as (
 	from osm_building_area_2023_urban_centers_grid
 	group by urban_center_id
 ),
+unnested_data as (
+	select
+		grid_fid
+		,urban_center_id
+		,external_reference_building_area_sqkm
+		,unnest("source") as "source"
+	from external_reference_data_urban_centers_grid
+),
 external_reference_data_urban_centers as (
 	select
 		urban_center_id
 		,SUM(external_reference_building_area_sqkm) as external_reference_building_area_sqkm
-	from external_reference_data_urban_centers_grid
+		,array_agg(distinct "source") as external_reference_sources
+	from unnested_data
+	where "source" != 'microsoft' and "source" != 'google'
 	group by urban_center_id
 ),
 microsoft_reference_data_urban_centers as (
@@ -85,6 +95,7 @@ select
     ,d.osm_building_area_sqkm_2009
     ,d.osm_building_area_sqkm_2008
     ,e.external_reference_building_area_sqkm
+    ,e.external_reference_sources
     ,f.microsoft_building_area_sqkm
     ,case
     	when e.external_reference_building_area_sqkm is null then f.microsoft_building_area_sqkm
@@ -121,3 +132,5 @@ left join geowiki_selection_urban_centers g on
 CREATE INDEX full_urban_centers_gist
   ON full_urban_centers
   USING GIST (geom);
+
+

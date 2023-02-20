@@ -31,6 +31,7 @@ select
 	,g.osm_building_area_sqkm_2009
 	,g.osm_building_area_sqkm_2008
 	,h.external_reference_building_area_sqkm
+	,h.source as reference_source
 	,i.microsoft_building_area_sqkm
 	,case
 		when h.external_reference_building_area_sqkm is null then i.microsoft_building_area_sqkm

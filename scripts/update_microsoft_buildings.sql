@@ -68,6 +68,8 @@ select
 from microsoft_buildings_urban_centers_grid_2023_union a
 left join metadata_urban_centers_grid b on
 	a.grid_fid = b.grid_fid and a.urban_center_id = b.urban_center_id
+-- these countries are not available for Microsoft global ML building footprints
+where b.iso_a3 not in ('TZA', 'UGA', 'IDN', 'PHL', 'MYS')
 group by a.urban_center_id, a.grid_fid, b.geom;
 
 

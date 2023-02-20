@@ -74,13 +74,18 @@ Optional: Update humanitarian OSM contributions made through HOT Tasking Manager
 * get the latest data from [HumStats website/database](https://humstats.heigit.org/index.html) (table: `osm_user_contributions_per_project_per_day`)
   * `pg_dump --data-only -h localhost -p 5001 -d mm_stats -U mm_stats --no-owner -t data_preparation.osm_user_contributions_per_project_per_day > data/osm_user_contributions_per_project_per_day.sql`
   * `pg_dump --data-only -h localhost -p 5001 -d mm_stats -U mm_stats --no-owner -t data_preparation.projects > data/hot_tm_projects.sql`
+  * `pg_dump --data-only -h localhost -p 5001 -d mm_stats -U mm_stats --no-owner -t data_preparation.sessions > data/hot_tm_sessions.sql`
   * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/create_table_osm_user_contributions_per_project_per_day.sql`
   * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/osm_user_contributions_per_project_per_day.sql`
   * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/hot_tm_projects.sql`
+  * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/hot_tm_sessions.sql`
 * calculate the daily OSM user contributions for buildings for all urban_centers using oshdb2pg tool (table: `osm_user_contributions_per_urban_center_per_day`)
   * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/create_table_osm_user_contributions_per_urban_center_per_day.sql`
   * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/osm_user_contributions_per_urban_center_per_day.sql`
+  * `pg_dump --data-only -h localhost -p 5001 -d mm_stats -U mm_stats --no-owner -t public.osm_user_contributions_per_urban_center_per_day_since_2021 > data/osm_user_contributions_per_urban_center_per_day_since_2021.sql` 
+  * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f data/osm_user_contributions_per_urban_center_per_day_since_2021.sql`
 * flag which user contributions per urban center are made through HOT Tasking Manager
+  * `psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/hot_stats.sql`
 
 ### Prediction and Intra-Urban Inequality Measures
 Run ML model to predict building area per 1km x 1km grid cell. Then calculate completeness per grid cell and aggregate prediction results for each urban center and derive completeness for each year.
@@ -99,8 +104,14 @@ psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/aggregate_complet
 
 Calculate intra-urban inequality measures (Gini coefficient and Moran's I) for urban centers with a minimum size of 25 square kilometers. Then run agglomerative clustering.
 ```
-python scripts/intra_urban_inequality_meausres.py
+python scripts/intra_urban_inequality_measures.py
 python scripts/agglomerative_clustering.py
+```
+
+Compare Microsoft Buildings and Geo-Wiki grid cells.
+
+```
+psql -p 5429 -U osm-paper -h localhost -d osm-paper -f scripts/microsoft_buildings_performance.sql
 ```
 
 ### Performance
@@ -121,6 +132,8 @@ ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhos
 ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhost port=5429 dbname=osm-paper user=osm-paper password=osm-paper" -update -overwrite -nlt POLYGON -nln rf_adjusted_prediction_reference_and_osm_urban_centers -sql "SELECT * FROM prediction_reference_and_osm_urban_centers"
 ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhost port=5429 dbname=osm-paper user=osm-paper password=osm-paper" -update -overwrite -nlt POLYGON -nln performance_20_clusters_reference_and_osm -sql "SELECT * FROM performance_20_clusters_reference_and_osm"
 ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhost port=5429 dbname=osm-paper user=osm-paper password=osm-paper" -update -overwrite -nlt POLYGON -nln inequality_measures_urban_centers -sql "SELECT a.*, b.geom FROM inequality_measures_with_clusters_urban_centers a LEFT JOIN full_urban_centers b ON a.urban_center_id = b.urban_center_id"
+ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhost port=5429 dbname=osm-paper user=osm-paper password=osm-paper" -update -overwrite -nlt POINT -nln geowiki_grids_final -sql "SELECT * FROM geowiki_grids_final"
+ogr2ogr -f "GPKG" data/global_urban_building_completeness.gpkg PG:"host=localhost port=5429 dbname=osm-paper user=osm-paper password=osm-paper" -update -overwrite -nln osm_user_contributions_per_urban_center_per_day_with_flag -sql "SELECT * FROM osm_user_contributions_per_urban_center_per_day_with_flag"
 ```
 
 Export data as sql files for ohsomeHex visualisation.
@@ -130,6 +143,3 @@ pg_dump --data-only -h localhost -p 5429 -d osm-paper -U osm-paper -t urban_buil
 pg_dump --data-only -h localhost -p 5429 -d osm-paper -U osm-paper -t urban_building_completeness_polygon > data/urban_building_completeness_polygon.sql
 pg_dump --data-only -h localhost -p 5429 -d osm-paper -U osm-paper -t urban_building_completeness_point > data/urban_building_completeness_point.sql
 ```
-
-
-

@@ -10,3 +10,11 @@ CREATE TABLE osm_user_contributions_per_urban_center_per_day (
 	"DELETION_COUNT" int8 NULL,
 	urban_center_id int8 NULL
 );
+
+CREATE TABLE osm_user_contributions_per_urban_center_per_day_since_2021 (
+	id int8 NULL,
+	"timestamp" timestamptz NULL,
+	"contributionType" text NULL,
+	"userID" int4 NULL,
+	area float8 NULL
+);
