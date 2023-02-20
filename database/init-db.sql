@@ -97,3 +97,15 @@ CREATE TABLE reference_data_urban_centers_grid_raw (
 	geom public.geometry(polygon, 4326) NULL,
 	PRIMARY KEY(grid_fid, "source")
 );
+
+create table microsoft_buildings_urban_centers_grid_new (
+	grid_id	 bigint,
+	urban_center_id int,
+	urban_center_name varchar,
+	iso_a3 varchar,
+	quadkey varchar,
+	ms_building_count int,
+	ms_building_area_sq_m numeric,
+	sample_building_footprint public.geometry,
+	grid_wkt public.geometry
+);
