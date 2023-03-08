@@ -14,7 +14,7 @@ Here we provide the python code and data for reproducing the analysis and figure
 
 
 ## Data
-Make sure to download geopackage data from HeiBox: https://heibox.uni-heidelberg.de/f/b2f22e7f341f48a89100/
+Make sure to download geopackage data from Figshare: https://doi.org/10.6084/m9.figshare.22217038
 
 You can also interactively explore the results in [ohsomeHex](https://hex.ohsome.org/#/urban_building_completeness/2022-01-01T00:00:00Z/2/29.21752531472042/16.251362043911197).
 [![name](figures/ohsome_hex_screenshot.png)](https://hex.ohsome.org/#/urban_building_completeness/2022-01-01T00:00:00Z/2/29.21752531472042/16.251362043911197)
