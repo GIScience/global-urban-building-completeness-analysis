@@ -1,4 +1,4 @@
-# Investigating completeness and inequalities in OpenStreetMap: spatio-temporal analysis of global urban building data
+# A spatio-temporal analysis investigating completeness and inequalities of global urban building data in OpenStreetMap
 
 Benjamin Herfort, Sven Lautenbach, João Porto de Albuquerque et al. Investigating the digital divide in OpenStreetMap: spatio-temporal analysis of inequalities in global urban building completeness, 26 August 2022, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-1913150/v1](https://doi.org/10.21203/rs.3.rs-1913150/v1)
 
