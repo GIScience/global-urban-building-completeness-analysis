@@ -15,7 +15,7 @@ def load_urban_centers_grid(input_file, layer_grid):
     df["region_wb_cat"] = pd.Categorical(df["region_wb"])
     df["region_code"] = df.region_wb_cat.cat.codes
 
-    df["shdi"].fillna((df["shdi"].mean()), inplace=True)
+    df["shdi_2021"].fillna((df["shdi_2021"].mean()), inplace=True)
     df["selected_road_length_km"].fillna(
         (df["selected_road_length_km"].mean()), inplace=True
     )
@@ -25,7 +25,7 @@ def load_urban_centers_grid(input_file, layer_grid):
             "external_reference_building_area_sqkm",
             "microsoft_building_area_sqkm",
             "reference_building_area_sqkm",
-            "reference_osm_completeness",
+            "reference_completeness",
             "region_wb",
             "region_wb_cat",
             "region_code",
@@ -42,11 +42,11 @@ def get_urban_center_centroids(inputfile, layer_uc, grid_df):
     """Get the centroids of the urban centers."""
     # returns message, that centroids are likely incorrect because the data is in a geographic CRS. is reprojecting neccessary??
     copy_df = grid_df[
-        ["ID_UC_G0", "osm_building_area_sqkm_2024-05", "reference_building_area_sqkm"]
+        ["urban_center_id", "osm_building_area_sqkm_2024_05", "reference_building_area_sqkm"]
     ]
-    copy_df = copy_df.groupby("ID_UC_G0").sum()
-    copy_df["reference_osm_completeness"] = round(
-        copy_df["osm_building_area_sqkm_2024-05"]
+    copy_df = copy_df.groupby("urban_center_id").sum()
+    copy_df["reference_completeness"] = round(
+        copy_df["osm_building_area_sqkm_2024_05"]
         / copy_df["reference_building_area_sqkm"],
         3,
     )
@@ -54,14 +54,14 @@ def get_urban_center_centroids(inputfile, layer_uc, grid_df):
     uc_grid = gpd.read_file(inputfile, layer=layer_uc)
     uc_grid = pd.merge(
         uc_grid,
-        copy_df[["reference_building_area_sqkm", "reference_osm_completeness"]],
-        on="ID_UC_G0",
+        copy_df[["reference_building_area_sqkm", "reference_completeness"]],
+        on="urban_center_id",
         how="left",
     )
 
     # filter the columns out, where the (training) data might not be complete
     df = uc_grid[
-        (uc_grid["reference_osm_completeness"] < 1.5)
+        (uc_grid["reference_completeness"] < 1.5)
         & (uc_grid["reference_building_area_sqkm"].notnull())
     ]
 
@@ -72,7 +72,7 @@ def get_urban_center_centroids(inputfile, layer_uc, grid_df):
 
     logging.info(f"got {len(df)} urban centers with centroid coordinates")
 
-    return df[["ID_UC_G0", "x", "y"]]
+    return df[["urban_center_id", "x", "y"]]
 
 
 def spatial_train_test_split_cluster(df, cluster_label, n=0):
@@ -113,7 +113,7 @@ def estimate_model_performance(inputfile, layer_uc, layer_prediction, n_clusters
     cluster_df, n_clusters = kmeans_cluster_urban_centers(
         urban_centers_df, "x", "y", n_clusters
     )
-    df = df.join(cluster_df.set_index("ID_UC_G0"), on="ID_UC_G0", how="inner")
+    df = df.join(cluster_df.set_index("urban_center_id"), on="urban_center_id", how="inner")
     region_groups = list(range(0, n_clusters))
 
     # df for model
@@ -165,7 +165,7 @@ def estimate_model_performance(inputfile, layer_uc, layer_prediction, n_clusters
             # save predictions to Geopackage
             df_export = df_test[
                 [
-                    "ID_UC_G0",
+                    "urban_center_id",
                     "identifier",
                     "region_wb",
                     "repeat",
@@ -202,18 +202,18 @@ if __name__ == "__main__":
         format="%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s",
     )
 
-    inputfile = pathlib.Path("../jrc_uc_wgs84.gpkg")
+    inputfile = pathlib.Path("../abgabe.gpkg")
     layer_uc = "uc_2025"
-    layer_grid = "uc_grid"
+    layer_grid = "grid_full_info_v2024"
     layer_grid_prediction = "prediction_improved"
 
     COVARIATE_COLUMNS = [
-        "wc_built_up_sqkm",
-        "wc_tree_cover_sqkm",
-        "wc_sparse_vegetation_sqkm",
-        "GHS_POP",
-        "vnl_mean",
-        "shdi",
+        "worldcover_2021_built_up_sqkm",
+        "worldcover_2021_tree_cover_sqkm",
+        "worldcover_2021_sparse_vegetation_sqkm",
+        "ghs_pop_2023",
+        "vnl_2023",
+        "shdi_2021",
         "selected_road_length_km",
         "region_code",
     ]
